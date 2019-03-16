@@ -1,0 +1,8 @@
+/Debug/
+/Release/
+.tar.gz
+.gz
+
+*.tar.gz
+*.d
+*.o

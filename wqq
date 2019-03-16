@@ -1,0 +1,582 @@
+[1mdiff --git a/LinuxMETEO-skrzyczne-11102017.tar.gz b/LinuxMETEO-skrzyczne-11102017.tar.gz[m
+[1mdeleted file mode 100644[m
+[1mindex f7e01dd..0000000[m
+Binary files a/LinuxMETEO-skrzyczne-11102017.tar.gz and /dev/null differ
+[1mdiff --git a/LinuxMETEO-skrzyczne-mod.tar.gz b/LinuxMETEO-skrzyczne-mod.tar.gz[m
+[1mdeleted file mode 100644[m
+[1mindex 055ff85..0000000[m
+Binary files a/LinuxMETEO-skrzyczne-mod.tar.gz and /dev/null differ
+[1mdiff --git a/arm-skrzyczne/LinuxMETEO b/arm-skrzyczne/LinuxMETEO[m
+[1mdeleted file mode 100644[m
+[1mindex d37c8e8..0000000[m
+Binary files a/arm-skrzyczne/LinuxMETEO and /dev/null differ
+[1mdiff --git a/arm-skrzyczne/crontab b/arm-skrzyczne/crontab[m
+[1mdeleted file mode 100644[m
+[1mindex 806ce2b..0000000[m
+[1m--- a/arm-skrzyczne/crontab[m
+[1m+++ /dev/null[m
+[36m@@ -1,16 +0,0 @@[m
+[31m-# /etc/crontab: system-wide crontab[m
+[31m-# Unlike any other crontab you don't have to run the `crontab'[m
+[31m-# command to install the new version when you edit this file[m
+[31m-# and files in /etc/cron.d. These files also have username fields,[m
+[31m-# that none of the other crontabs do.[m
+[31m-[m
+[31m-SHELL=/bin/sh[m
+[31m-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin[m
+[31m-[m
+[31m-# m h dom mon dow user	command[m
+[31m-17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly[m
+[31m-25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )[m
+[31m-47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )[m
+[31m-52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )[m
+[31m-* * * * * root	/usr/local/bin/LinuxMETEO > /var/log/linuxmeteo[m
+[31m-#[m
+[1mdiff --git a/main/main.cpp b/main/main.cpp[m
+[1mindex 150eda0..b74e4fa 100644[m
+[1m--- a/main/main.cpp[m
+[1m+++ b/main/main.cpp[m
+[36m@@ -27,7 +27,7 @@[m [mint main() {[m
+ 	unsigned char globalChNumber = 0;[m
+ 	unsigned char devicesNum = ProgramConfig::getDevicesNumber();[m
+ [m
+[31m-	s.init("/dev/ttyS0");[m
+[32m+[m	[32ms.init("/dev/ttyUSBWX");[m
+ [m
+ 	UmbThread *t;[m
+ 	t = new UmbThread(&s, ProgramConfig::getMasterId(), ProgramConfig::getDevices());[m
+[1mdiff --git a/x86-alix-kozia-v2/LinuxMETEO b/x86-alix-kozia-v2/LinuxMETEO[m
+[1mdeleted file mode 100755[m
+[1mindex 91de5c3..0000000[m
+Binary files a/x86-alix-kozia-v2/LinuxMETEO and /dev/null differ
+[1mdiff --git a/x86-alix-kozia-v2/aprx.conf b/x86-alix-kozia-v2/aprx.conf[m
+[1mdeleted file mode 100644[m
+[1mindex b8d5163..0000000[m
+[1m--- a/x86-alix-kozia-v2/aprx.conf[m
+[1m+++ /dev/null[m
+[36m@@ -1,424 +0,0 @@[m
+[31m-#[m
+[31m-# Simple sample configuration file for the APRX-2  -- an APRS iGate and Digipeater[m
+[31m-#[m
+[31m-# This configuration is structured with Apache HTTPD style tags[m
+[31m-# which then contain subsystem parameters.[m
+[31m-#[m
+[31m-[m
+[31m-#[m
+[31m-# For simple case, you need to adjust 4 things:[m
+[31m-#   - Mycall parameter[m
+[31m-#   - passcode parameter in APRS-IS configuration[m
+[31m-#   - Select correct type of interface (ax25-device or serial-device)[m
+[31m-#   - Optionally set a beacon telling where this system is[m
+[31m-#   - Optionally enable digipeater with or without tx-igate[m
+[31m-#[m
+[31m-[m
+[31m-#[m
+[31m-#[m
+[31m-# Define the parameters in following order:[m
+[31m-#   1)  <aprsis>     ** zero or one[m
+[31m-#   2)  <logging>    ** zero or one[m
+[31m-#   3)  <interface>  ** there can be multiple![m
+[31m-#   4)  <beacon>     ** zero to many[m
+[31m-#   5)  <telemetry>  ** zero to many[m
+[31m-#   6)  <digipeater> ** zero to many (at most one for each Tx)[m
+[31m-#[m
+[31m-[m
+[31m-#[m
+[31m-# Global macro for simplified callsign definition:[m
+[31m-# Usable for 99+% of cases.[m
+[31m-#[m
+[31m-[m
+[31m-mycall  SR9WXS[m
+[31m-[m
+[31m-#[m
+[31m-# Global macro for simplified "my location" definition in[m
+[31m-# place of explicit "lat nn lon mm" at beacons. Will also[m
+[31m-# give "my location" reference for "filter m/100".[m
+[31m-#[m
+[31m-myloc lat 4948.82N lon 01903.50E[m
+[31m-[m
+[31m-<aprsis>[m
+[31m-# The  aprsis login  parameter: [m
+[31m-# Station callsignSSID used for relaying APRS frames into APRS-IS.[m
+[31m-# Use this only to define other callsign for APRS\-IS login.[m
+[31m-#[m
+[31m-#login     OTHERCALL-7	# login defaults to $mycall[m
+[31m-[m
+[31m-#[m
+[31m-# Passcode for your callsign:[m
+[31m-# Unique code for your callsign to allow transmitting packets[m
+[31m-# into the APRS-IS.[m
+[31m-#[m
+[31m-passcode 16820[m
+[31m-[m
+[31m-# APRS-IS server name and optional portnumber.[m
+[31m-#[m
+[31m-# WARNING: Do not change from default port number [14580][m
+[31m-#          unless you are absolutely certain you want[m
+[31m-#          something else, and you allow that something[m
+[31m-#          else also affect your tx-igate behaviour![m
+[31m-#[m
+[31m-#server    rotate.aprs2.net[m
+[31m-server   euro.aprs2.net[m
+[31m-#server   asia.aprs2.net[m
+[31m-#server   noam.aprs2.net[m
+[31m-#server   soam.aprs2.net[m
+[31m-#server   aunz.aprs2.net[m
+[31m-[m
+[31m-# Some APRS-IS servers tell every about 20 seconds to all contact[m
+[31m-# ports that they are there and alive. Others are just silent.[m
+[31m-# Default value is 3*"heartbeat" + some  --> 120 (seconds)[m
+[31m-#[m
+[31m-#heartbeat-timeout   0    # Disabler of heartbeat timeout[m
+[31m-[m
+[31m-# APRS-IS server may support some filter commands.[m
+[31m-# See:  http://www.aprs-is.net/javAPRSFilter.aspx[m
+[31m-#[m
+[31m-# You can define the filter as single long quoted string, or as[m
+[31m-# many short segments with explaining comments following them.[m
+[31m-#[m
+[31m-# Usability of these filters for a Tx-iGate is dubious, but[m
+[31m-# they exist in case you for example want to Tx-iGate packets[m
+[31m-# from some source callsigns in all cases even when they are[m
+[31m-# not in your local area.[m
+[31m-#[m
+[31m-#filter "possibly multiple filter specs in quotes"[m
+[31m-#[m
+[31m-#filter "m/100"	     # My-Range filter: positions within 100 km from my location[m
+[31m-#filter "f/OH2XYZ-3/50"  # Friend-Range filter: 50 km of friend's last beacon position[m
+[31m-</aprsis>[m
+[31m-[m
+[31m-<logging>[m
+[31m-[m
+[31m-# pidfile is UNIX way to tell that others that this program is[m
+[31m-# running with given process-id number.  This has compiled-in[m
+[31m-# default value of:  pidfile /var/run/aprx.pid[m
+[31m-#[m
+[31m-pidfile /var/run/aprx.pid[m
+[31m-[m
+[31m-[m
+[31m-# rflog defines a rotatable file into which all RF-received packets[m
+[31m-# are logged.  The host system can rotate it at any time without[m
+[31m-# need to signal the aprx that the file has been moved.[m
+[31m-#[m
+[31m-rflog /var/log/aprx/aprx-rf.log[m
+[31m-[m
+[31m-# aprxlog defines a rotatable file into which most important [m
+[31m-# events on APRS-IS connection are logged, namely connects and[m
+[31m-# disconnects.  The host system can rotate it at any time without[m
+[31m-# need to signal the aprx that the file has been moved.[m
+[31m-#[m
+[31m-aprxlog /var/log/aprx/aprx.log[m
+[31m-[m
+[31m-# dprslog defines a rotatable file into which most important [m
+[31m-# events on DPRS receiver gateways are logged.[m
+[31m-# The host system can rotate it at any time without need to[m
+[31m-# signal the aprx that the file has been moved.[m
+[31m-#[m
+[31m-#dprslog /var/log/aprx/dprs.log[m
+[31m-[m
+[31m-# erlangfile defines a mmap():able binary file, which stores[m
+[31m-# running sums of interfaces upon which the channel erlang[m
+[31m-# estimator runs, and collects data.[m
+[31m-# Depending on the system, it may be running on a filesystem[m
+[31m-# that actually retains data over reboots, or it may not.[m
+[31m-# With this backing store, the system does not loose cumulating[m
+[31m-# erlang data over the current period, if the restart is quick,[m
+[31m-# and does not stradle any exact minute.[m
+[31m-# (Do restarts at 15 seconds over an even minute..)[m
+[31m-# This file is around 0.7 MB per each interface talking APRS.[m
+[31m-# If this file is not defined and it can not be created,[m
+[31m-# internal non-persistent in-memory storage will be used.[m
+[31m-#[m
+[31m-# Built-in default value is: /var/run/aprx.state[m
+[31m-#[m
+[31m-#erlangfile /var/run/aprx.state[m
+[31m-[m
+[31m-</logging>[m
+[31m-[m
+[31m-[m
+[31m-# ***********  Multiple <interface> definitions can follow   *********[m
+[31m-[m
+[31m-# ax25-device  Lists AX.25 ports by their callsigns that in Linux[m
+[31m-#              systems receive APRS packets.  If none are defined,[m
+[31m-#              or the system is not Linux, the AX.25 network receiver[m
+[31m-#              is not enabled.  Used technologies need at least[m
+[31m-#              Linux kernel 2.4.x[m
+[31m-#[m
+[31m-# tx-ok        Boolean telling if this device is able to transmit.[m
+[31m-#[m
+[31m-[m
+[31m-#<interface>[m
+[31m-#   ax25-device   $mycall[m
+[31m-#   #tx-ok        false  # transmitter enable defaults to false[m
+[31m-#   #telem-to-is  true # set to 'false' to disable[m
+[31m-#</interface>[m
+[31m-[m
+[31m-[m
+[31m-#[m
+[31m-# The  TNC serial  options.  Parameters are:[m
+[31m-#   - /dev/ttyUSB1    -- tty device[m
+[31m-#   - 19200           -- baud rate, supported ones are:[m
+[31m-#                        1200, 2400, 4800, 9600, 19200, 38400[m
+[31m-#   - 8n1             -- 8-bits, no parity, one stop-bit,[m
+[31m-#                        no other supported modes[m
+[31m-#   - "KISS"                  - plain basic KISS mode[m
+[31m-#   - "XORSUM" alias "BPQCRC" - KISS with BPQ "CRC" byte[m
+[31m-#   - "SMACK"  alias "CRC16"  - KISS with real CRC[m
+[31m-#   - "FLEXNET"               - KISS with real CRC[m
+[31m-#   - "TNC2"                  - TNC2 monitor format[m
+[31m-#   - "DPRS"                  - DPRS (RX) GW[m
+[31m-#[m
+[31m-[m
+[31m-<interface>[m
+[31m-   serial-device /dev/ttyUSB0  9600 8n1    KISS[m
+[31m-   callsign     $mycall  # callsign defaults to $mycall[m
+[31m-   tx-ok        true   # transmitter enable defaults to false[m
+[31m-   telem-to-is  false # set to 'false' to disable[m
+[31m-</interface>[m
+[31m-[m
+[31m-#<interface>[m
+[31m-#   serial-device /dev/ttyUSB1  19200 8n1    TNC2[m
+[31m-#   #callsign     $mycall  # callsign defaults to $mycall[m
+[31m-#   #tx-ok        false    # TNC2 monitor can not have transmitter[m
+[31m-#   #telem-to-is  true # set to 'false' to disable[m
+[31m-#</interface>[m
+[31m-[m
+[31m-#<interface>[m
+[31m-#   serial-device /dev/ttyUSB1  19200 8n1    DPRS[m
+[31m-#   callsign     dprsgwcallsign  # must define actual callsign[m
+[31m-#   #tx-ok       false           # DPRS monitor can not do transmit[m
+[31m-#   #telem-to-is true # set to 'false' to disable[m
+[31m-#</interface>[m
+[31m-[m
+[31m-# [m
+[31m-# tcp-device behaves identically to local serial port, but allows[m
+[31m-# access to remote TCP/IP sockets. A common application is remote[m
+[31m-# KISS modems connected to Ethernet-to-serial adapters from suppliers[m
+[31m-# such as Lantronix.[m
+[31m-# It's important that this remote socket is a raw TCP socket and not[m
+[31m-# handle any byte codes as command escapes.[m
+[31m-#[m
+[31m-#   tcp-device    hostname    portnumber  mode[m
+[31m-#     - hostname may be a domain name, IPv4 address, or a IPv6 address[m
+[31m-#     - portnumber is any valid TCP port (1-65535)[m
+[31m-#     - mode is the same as serial-device (KISS, TNC2, etc.)[m
+[31m-#[m
+[31m-[m
+[31m-<interface>[m
+[31m-   tcp-device    127.0.0.1 8001    KISS[m
+[31m-   callsign     SR9WXS-6  # callsign defaults to $mycall[m
+[31m-   tx-ok        false    # transmitter enable defaults to false[m
+[31m-   telem-to-is  false # set to 'false' to disable[m
+[31m-</interface>[m
+[31m-[m
+[31m-<beacon>[m
+[31m-#	beaconmode [m
+[31m-	cycle-size 4m[m
+[31m-	beacon srccall $mycall file /var/local/output.txt[m
+[31m-</beacon>[m
+[31m-[m
+[31m-[m
+[31m-# ***********  Multiple <beacon>  definitions can follow   *********[m
+[31m-<beacon>[m
+[31m-#[m
+[31m-#  Beacons are sent out to radio transmitters AND/OR APRSIS.[m
+[31m-#  Default is "both", other modes are settable.[m
+[31m-#[m
+[31m-beaconmode aprsis [m
+[31m-#[m
+[31m-#  Beacons are sent from a circullar transmission queue, total cycle time[m
+[31m-#  of that queue is 20 minutes by default, and beacons are "evenly"[m
+[31m-#  distributed along it.  Actual intervals are randomized to be anything[m
+[31m-#  in between 80% and 100% of the  cycle-size / number-of-beacons.[m
+[31m-#  First beacon is sent out 30 seconds after system start.[m
+[31m-#  Tune the cycle-size to be suitable to your number of defined beacons.[m
+[31m-#[m
+[31m-cycle-size  5m[m
+[31m-#[m
+[31m-# Basic beaconed thing is positional message of type "!":[m
+[31m-#[m
+[31m-#beacon srccall $mycall symbol "I&" $myloc comment "RX-igate - Mateusz Bielsko Biala -> tel. 660 43 44 46"[m
+[31m-#beacon srccall $mycall object "SKRZYN" symbol "/1" lat "4946.46N" lon "01902.88E" comment "cos tam jest"[m
+[31m-#beacon symbol "R&" $myloc comment "Rx-only iGate"[m
+[31m-#[m
+[31m-#Following are basic options:[m
+[31m-# 'symbol'    no default, must be defined![m
+[31m-# 'lat'       coordinate latitude:   ddmm.mmN  (no default!)[m
+[31m-# 'lon'       coordinate longitude: dddmm.mmE  (no default!)[m
+[31m-# '$myloc'    coordinate values taken from global 'myloc' entry,[m
+[31m-#             and usable in place of explicit 'lat'+'lon'.[m
+[31m-# 'comment'   optional tail part of the item, default is nothing[m
+[31m-#[m
+[31m-# Sample symbols:[m
+[31m-#   R&   is for "Rx-only iGate"[m
+[31m-#   I&   is for "Tx-iGate"[m
+[31m-#   /#   is for "Digipeater"[m
+[31m-#   I#   is for "Tx-iGate + Digipeater""[m
+[31m-#[m
+[31m-#Additional options are:[m
+[31m-# 'srccall'   parameter sets claimed origination address.[m
+[31m-# 'dstcall'   sets destination address, default "APRXnn"[m
+[31m-# 'interface' parameter picks an interface (must be "tx-ok true" type)[m
+[31m-# 'via'       sets radio distribution pattern, default: none.[m
+[31m-# 'timefix'   On APRS messages with HMS timestamp (hour:min:sec), the[m
+[31m-#             system fixes appropriate field with transmit time timestamp.[m
+[31m-#[m
+[31m-# Message type is by default '!', which is positional no timestamp format.[m
+[31m-# Other possible formats are definable with options:[m
+[31m-# 'type'      Single character setting type:  ! = / @, default: ![m
+[31m-# 'item'      Defines a name of Item (')') type beacons.[m
+[31m-# 'object'    Defines a name of Object (';') type beacons.[m
+[31m-#[m
+[31m-# 'file' option tells a file at which a _raw_ APRS message content is[m
+[31m-#        expected to be found as first line of text. Line ending newline[m
+[31m-#        is removed, and no escapes are supported.  The timefix is[m
+[31m-#        available, though probably should not be used.[m
+[31m-#        No \-processing is done on read text line.[m
+[31m-#[m
+[31m-# 'exec' option tells a computer program which returns to stdout _raw_ APRS[m
+[31m-#        message content without newline. The timefix is[m
+[31m-#        available, though probably should not be used.[m
+[31m-#        No \-processing is done on read text line.[m
+[31m-#[m
+[31m-# The parameter sets can vary:[m
+[31m-#  a) 'srccall nnn-n dstcall "string" symbol "R&" lat "ddmm.mmN" lon "dddmm.mmE" [comment "any text"][m
+[31m-#  b) 'srccall nnn-n dstcall "string" symbol "R&" $myloc [comment "any text"][m
+[31m-#  c) 'srccall nnn-n dstcall "string" raw "string"'[m
+[31m-#[m
+[31m-# The a) form flags on some of possible syntax errors in parameters.[m
+[31m-# It will also create only "!" type messages.  The dest parameter[m
+[31m-# defaults to "APRS", but can be used to give other destinations.[m
+[31m-# The via parameter can be used to add other keywords, like "NOGATE".[m
+[31m-#[m
+[31m-# Writing correct RAW format beacon message is very hard,[m
+[31m-# which is evidenced by the frequency of bad syntax texts[m
+[31m-# people so often put there...   If you can not be persuaded[m
+[31m-# not to do it, then at least VERIFY the beacon result on[m
+[31m-# web service like  findu.com,  or  aprs.fi[m
+[31m-#[m
+[31m-# Do remember that the \ -character has special treatment in the[m
+[31m-# Aprx configuration parser.  If you want a '\' on APRS content,[m
+[31m-# then you encode it on configuration file as:  '\\'[m
+[31m-#[m
+[31m-# Stranger combinations with explicite "transmit this to interface X":[m
+[31m-#[m
+[31m-#beacon                     file /tmp/wxbeacon.txt[m
+[31m-#beacon interface N0CALL-3 srccall N0CALL-3 \[m
+[31m-#                           raw "!0000.00NR00000.00E&Rx-only iGate"[m
+[31m-#beacon interface N0CALL-3 srccall N0CALL-3 \[m
+[31m-#                           raw "!0000.00NI00000.00E&Tx-iGate"[m
+[31m-#beacon interface $mycall   symbol "R&" $myloc \[m
+[31m-#                           comment "Rx-only iGate"[m
+[31m-#beacon interface $mycall   symbol "I&" $myloc \[m
+[31m-#                           comment "Tx-iGate"[m
+[31m-#beacon                     exec /usr/bin/telemetry.pl[m
+[31m-#beacon                     timeout 20 exec /usr/bin/telemetry.pl[m
+[31m-#beacon interface N0CALL-3 srccall N0CALL-3 \[m
+[31m-#                           timeout 20 exec /usr/bin/telemetry.pl[m
+[31m-#[m
+[31m-</beacon>[m
+[31m-[m
+[31m-#<beacon>[m
+[31m-#	beaconmode aprsis[m
+[31m-#	beacon object "CACHE" symbol "/1" lat "4946.462N" lon "01902.883E" comment "cos tam jest"[m
+[31m-#	cycle-size 4m[m
+[31m-#</beacon>[m
+[31m-[m
+[31m-# ***********  <telemetry>  definition(s) follow   *********[m
+[31m-#[m
+[31m-# The system will always send telemetry for all of its interfaces[m
+[31m-# to APRSIS, but there is an option to define telemetry to be sent[m
+[31m-# to radio channel by using following sections for each transmitter[m
+[31m-# that is wanted to send out the telemetry.[m
+[31m-#[m
+[31m-#   transmitter   -  callsign referring to <interface>[m
+[31m-#   via           -  optional via-path, only 1 callsign![m
+[31m-#   source        -  one or more of <interface> callsigns for which[m
+[31m-#                    the telemetry transmission is wanted for[m
+[31m-#[m
+[31m-#<telemetry>[m
+[31m-#	transmitter	$mycall[m
+[31m-#	via		TRACE1-1[m
+[31m-#	source		$mycall[m
+[31m-#</telemetry>[m
+[31m-[m
+[31m-# ***********  <digipeater>  definition(s) follow   *********[m
+[31m-#[m
+[31m-#  The digipeater definitions tell transmitters that receive[m
+[31m-#  AX.25 packets from possibly multiple sources, and then what[m
+[31m-#  to do on the AX.25 headers of those messages.[m
+[31m-#[m
+[31m-#  There is one transmitter per digipeater -- and inversely, there[m
+[31m-#  can be at most one digipeater for each transmitter.[m
+[31m-#[m
+[31m-#  In each digipeater there is at least one <source>, usually same[m
+[31m-#  as the transmitter.  You may use same <source> on multiple[m
+[31m-#  <digipeater>s. Using multiple instances of same <source> on[m
+[31m-#  a single <digipeater> does not crash the system, but it can cause[m
+[31m-#  packet duplication in case of non-APRS protocols (like AX.25 CONS)[m
+[31m-#[m
+[31m-#  Use only at most two levels of viscous-delay in your <digipeater>.[m
+[31m-#  Immediate sending is by "0", and a delayed sending is any value[m
+[31m-#  from 1 to 9.  This system does not correctly support other than[m
+[31m-#  immediate sending and one level of delay.[m
+[31m-#[m
+[31m-#  Note: In order to igate correct when multiple receivers and[m
+[31m-#        transmitters are used on single channel, the <interface>[m
+[31m-#        definitions of each radio port must have associated[m
+[31m-#        "igate-group N" parameter which has N of value 1 to 3.[m
+[31m-#        See the aprx-manual.pdf for details.[m
+[31m-#        (Default software compilation allows you to have up to[m
+[31m-#         three channels of APRS operation.)[m
+[31m-#[m
+[31m-#<digipeater>[m
+[31m-#    transmitter     $mycall[m
+[31m-#    #ratelimit      60 120      # default: average 60 packets/minute,[m
+[31m-#    #                           #          burst max 120 packets/minute[m
+[31m-#    #srcratelimit   10 20       # Example: by sourcecall:[m
+[31m-#                                #          average 10 packets/minute,[m
+[31m-#                                #          burst max 20 packets/minute[m
+[31m-#[m
+[31m-#    <source>[m
+[31m-#        source         $mycall[m
+[31m-#    #   #relay-type    digipeated # default mode is "digipeated"[m
+[31m-#    #   viscous-delay  0     # no viscous delay for RF->RF digipeating[m
+[31m-#    #   ratelimit      60 120      # default: average 60 packets/minute,[m
+[31m-#    #                              #          burst max 120 packets/minute[m
+[31m-#    ##  filter         a/la/lo/la/lo  # service area filter[m
+[31m-#    ##  filter         -b/CALL        # always block these[m
+[31m-#    </source>[m
+[31m-#[m
+[31m-#    #  Diversity receiver which combines to the primary[m
+[31m-#    #  Tx/Rx transmitter.  There can be as many of these[m
+[31m-#    #  as you can connect on this machine.[m
+[31m-#    #<source>[m
+[31m-#    #   source         RXPORT-1[m
+[31m-#    #   #relay-type    digipeated # default mode is "digipeated"[m
+[31m-#    #   viscous-delay  0     # no viscous delay for RF->RF digipeating[m
+[31m-#    #   ratelimit      60 120      # default: average 60 packets/minute,[m
+[31m-#    #                              #          burst max 120 packets/minute[m
+[31m-#    ##  filter         a/la/lo/la/lo  # service area filter[m
+[31m-#    ##  filter         -b/CALL        # always block these[m
+[31m-#    #</source>[m
+[31m-#[m
+[31m-#    #<source>                # APRSIS source adds a TX-IGATE behaviour[m
+[31m-#    #   source        APRSIS[m
+[31m-#    #   relay-type    third-party  # Must define this for APRSIS source![m
+[31m-#    #   viscous-delay  5    # Recommendation: 5 seconds delay to give[m
+[31m-#    #                       # RF delivery time make itself known.[m
+[31m-#    #   ratelimit      60 120      # default: average 60 packets/minute,[m
+[31m-#    #                              #          burst max 120 packets/minute[m
+[31m-#    ##  filter         a/la/lo/la/lo  # service area filter[m
+[31m-#    ##  filter         -b/CALL        # always block these[m
+[31m-#    #</source>[m
+[31m-#[m
+[31m-#    #<source>              # DPRS source adds a DPRS->APRS RF gate[m
+[31m-#    #   interface    DPRS[m
+[31m-#    #   ratelimit    60 120       # default: average 60 packets/minute,[m
+[31m-#    #                             #          burst max 120 packets/minute[m
+[31m-#    #   relay-type   third-party  # Must define this for DPRS source![m
+[31m-#    #</source>[m
+[31m-#</digipeater>[m
+[1mdiff --git a/x86-alix-kozia-v2/linuxmeteo.conf b/x86-alix-kozia-v2/linuxmeteo.conf[m
+[1mdeleted file mode 100644[m
+[1mindex dc07a95..0000000[m
+[1m--- a/x86-alix-kozia-v2/linuxmeteo.conf[m
+[1m+++ /dev/null[m
+[36m@@ -1,87 +0,0 @@[m
+[31m-ComPort = "/dev/ttyS0";[m
+[31m-OutputAprxFile = "/var/local/output.txt";[m
+[31m-MasterId = 10;[m
+[31m-[m
+[31m-Devices = ([m
+[31m-  {[m
+[31m-	deviceId = 2;[m
+[31m-	deviceClass = 12;[m
+[31m-	Channels = ([m
+[31m-		{[m
+[31m-			Number = 101;[m
+[31m-			Name = "temperatura";[m
+[31m-			Usage = "TEMPERATURE";[m
+[31m-			Unit = "degC";[m
+[31m-		},[m
+[31m-		{[m
+[31m-			Number = 440;[m
+[31m-			Name = "porywy";[m
+[31m-			Usage = "WINDGUSTS";[m
+[31m-			Unit = "m/s";[m
+[31m-		},[m
+[31m-		{[m
+[31m-			Number = 460;[m
+[31m-			Name = "predkosc";[m
+[31m-			Usage = "WINDSPEED";[m
+[31m-			Unit = "m/s";[m
+[31m-		},[m
+[31m-		{[m
+[31m-			Number = 580;[m
+[31m-			Name = "kierunek";[m
+[31m-			Usage = "WINDDIR";[m
+[31m-			Unit = "m/s";[m
+[31m-		},[m
+[31m-#		{[m
+[31m-#			Number = 300;[m
+[31m-#			Name = "qfe";[m
+[31m-#			Usage = "QFE";[m
+[31m-#			Unit = "hPa";[m
+[31m-#		},[m
+[31m-		{[m
+[31m-			Number = 350;[m
+[31m-			Name = "qnh";[m
+[31m-			Usage = "PRESSURE";[m
+[31m-			Unit = "hPa";[m
+[31m-		},[m
+[31m-		{[m
+[31m-			Number = 200;[m
+[31m-			Name = "wilgotnosc";[m
+[31m-			Usage = "HUMIDITY";[m
+[31m-			Unit = "hPa";[m
+[31m-		}[m
+[31m-[m
+[31m-	);[m
+[31m-  }[m
+[31m-[m
+[31m-# {[m
+[31m-#	deviceId = 1;[m
+[31m-#	deviceClass= 8;[m
+[31m-#	Channels = ([m
+[31m-#		{[m
+[31m-#			Number = 440;[m
+[31m-#			Name = "porywy";[m
+[31m-#			Usage = "WINDGUSTS";[m
+[31m-#			Unit = "m/s";[m
+[31m-#		},[m
+[31m-#		{[m
+[31m-#			Number = 460;[m
+[31m-#			Name = "predkosc";[m
+[31m-#			Usage = "WINDSPEED";[m
+[31m-#			Unit = "m/s";[m
+[31m-#		},[m
+[31m-#		{[m
+[31m-#			Number = 580;[m
+[31m-#			Name = "kierunek";[m
+[31m-#			Usage = "WINDDIR";[m
+[31m-#			Unit = "m/s";[m
+[31m-#		}[m
+[31m-#		{[m
+[31m-#			Number = 200;[m
+[31m-#			Name = "wilgotnosc";[m
+[31m-#			Usage = "HUMIDITY";[m
+[31m-#			Unit = "percent";[m
+[31m-#		}[m
+[31m-#	);[m
+[31m-#  }[m
+[31m-[m
+[31m-);[m
+[1mdiff --git a/x86-alix-kozia-v2/opis b/x86-alix-kozia-v2/opis[m
+[1mdeleted file mode 100644[m
+[1mindex 3bb9750..0000000[m
+[1m--- a/x86-alix-kozia-v2/opis[m
+[1m+++ /dev/null[m
+[36m@@ -1 +0,0 @@[m
+[31m-Kompilcja pod x86-i586 z poprawioną konwersją jednostek w Float.cpp[m
+\ No newline at end of file[m
