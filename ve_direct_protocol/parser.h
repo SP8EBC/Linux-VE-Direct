@@ -20,8 +20,10 @@ extern "C" {
 
 void ve_direct_parser_init(void);
 void ve_direct_cut_to_checksum(uint8_t* input, uint16_t input_ln, uint16_t* target_ln);
-void ve_direct_validate_checksum(uint8_t* input, uint8_t* valid);
+void ve_direct_validate_checksum(uint8_t* input, uint16_t input_ln, uint8_t* valid);
 int ve_direct_parse_to_raw_struct(uint8_t* input, uint16_t input_ln, ve_direct_raw_struct* out);
+void ve_direct_add_to_average(ve_direct_raw_struct* in);
+void ve_direct_get_averages(int16_t* battery_current, uint16_t* battery_voltage, uint16_t* pv_voltage, uint16_t* load_current);
 
 
 #ifdef __cplusplus

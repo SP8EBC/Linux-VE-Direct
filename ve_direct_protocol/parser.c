@@ -6,10 +6,12 @@
  */
 
 #include "parser.h"
+#include "average_struct.h"
+
 #include <string.h>
 #include <stdlib.h>
 
-#define CHECKSUM_NAME_FIELD_LN_TO_DATA 9
+#define CHECKSUM_NAME_FIELD_LN_TO_DATA 10
 #define LOWEST_PRINTABLE_CHARACTER 33
 #define HIGHEST_PRINTABLE_CHARACTER 126
 
@@ -19,11 +21,15 @@
 uint8_t key[9];			// the static array to store a key fetched from input file
 uint8_t value[12];
 
+ve_direct_average_struct ve_avg;
+
 static int copy_till_non_printable_char(uint8_t* input, uint16_t* input_offset, uint16_t input_ln, uint8_t* output, uint16_t output_ln) {
 
 	uint16_t j = 0;
 
-	for (int i = *input_offset; i < input_ln; i++) {
+	uint16_t i = 0;
+
+	for (i = *input_offset; i < input_ln; i++) {
 
 		// if we reach any non-printable character
 		if (is_non_printable_character() || j > output_ln) {
@@ -45,6 +51,8 @@ static int copy_till_non_printable_char(uint8_t* input, uint16_t* input_offset, 
 
 		output[j++] = input[i];
 	}
+
+	*input_offset = i;
 
 	return 0;
 }
@@ -112,6 +120,9 @@ static ve_direct_key_values get_key_value_from_str(uint8_t* input) {
 }
 
 void ve_direct_parser_init(void) {
+	uint16_t size = sizeof(ve_avg);
+
+	memset(&ve_avg, 0x00, size);
 }
 
 
@@ -128,7 +139,7 @@ void ve_direct_cut_to_checksum(uint8_t* input, uint16_t input_ln,
 		}
 	}
 
-	*target_ln = checksum_start;
+	*target_ln = checksum_start + CHECKSUM_NAME_FIELD_LN_TO_DATA;
 
 	for (i = checksum_start + CHECKSUM_NAME_FIELD_LN_TO_DATA; i < input_ln; i++) {
 		*(input + i) = 0x00;
@@ -136,7 +147,35 @@ void ve_direct_cut_to_checksum(uint8_t* input, uint16_t input_ln,
 
 }
 
-void ve_direct_validate_checksum(uint8_t* input, uint8_t* valid) {
+void ve_direct_validate_checksum(uint8_t* input, uint16_t input_ln, uint8_t* valid) {
+	uint8_t sum = 0;
+
+	uint8_t checksum = *(input + input_ln - 1);
+
+	int i = 0;
+
+	// rewind to first printable chcaracter
+	while (is_non_printable_character()) {
+		i++;
+
+		// if we reach an end of the string but no printable character has been spotted
+		if (i >= input_ln)
+			return;
+	}
+
+	// checksum need to be calculated including newline before first record
+	i -= 2;
+
+	for (; i < input_ln; i++) {
+		sum += *(input + i);
+	}
+
+	sum %= 256;
+
+	if (sum == 0)
+		*valid = 1;
+
+	return;
 }
 
 
@@ -244,7 +283,7 @@ int ve_direct_parse_to_raw_struct(uint8_t* input, uint16_t input_ln, ve_direct_r
 				else out->is_load_on = 0;
 				break;
 			case VE_PID:
-				out->pid = strtol(pointer_val, NULL, 10);
+				out->pid = strtol(pointer_val, NULL, 16);
 				break;
 			case VE_PPV:
 				out->pv_power = strtol(pointer_val, NULL, 10);
@@ -267,7 +306,43 @@ int ve_direct_parse_to_raw_struct(uint8_t* input, uint16_t input_ln, ve_direct_r
 
 }
 
+void ve_direct_add_to_average(ve_direct_raw_struct* in) {
 
+	uint16_t it = ve_avg.current_pointer;
 
+	ve_avg.battery_current[it] = in->battery_current;
+	ve_avg.battery_voltage[it] = in->battery_voltage;
+	ve_avg.load_current[it] = in->load_current;
+	ve_avg.pv_voltage[it] = in->pv_voltage;
 
+	it++;
 
+	if (it > 31)
+		it = 0;
+
+	ve_avg.current_pointer = it;
+
+	return;
+
+}
+
+void ve_direct_get_averages(int16_t* battery_current, uint16_t* battery_voltage,
+		uint16_t* pv_voltage, uint16_t* load_current) {
+
+	int32_t battery_current_avg = 0;
+	uint32_t battery_voltage_avg = 0;
+	uint32_t pv_voltage_avg = 0;
+	uint32_t load_current_avg = 0;
+
+	for (int i = 0; i < 32; i++) {
+		battery_current_avg += ve_avg.battery_current[i];
+		battery_voltage_avg += ve_avg.battery_voltage[i];
+		pv_voltage_avg += ve_avg.pv_voltage[i];
+		load_current_avg += ve_avg.load_current[i];
+	}
+
+	*battery_current = battery_current_avg / 32;
+	*battery_voltage = battery_voltage_avg / 32;
+	*pv_voltage = pv_voltage_avg / 32;
+	*load_current = load_current_avg / 32;
+}
